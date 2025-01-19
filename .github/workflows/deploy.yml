@@ -16,13 +16,21 @@ jobs:
       - name: Install Dependencies
         run: |
           # Install any dependencies needed for Marimo
+          python --version  # Debug: Check Python version
           pip install marimo
+          pip list  # Debug: List installed packages
 
       - name: 📄 Export notebook
         run: |
-          ls  # Debug: list files to see current directory
-          marimo export html-wasm visual-intro_active-inference.py -o output_dir --mode run
-          ls output_dir  # Debug: verify the export created files
+          pwd  # Debug: Show current directory
+          ls -la  # Debug: List all files with details
+          echo "Attempting to export notebook..."
+          marimo export html-wasm visual-intro_active-inference.py -o output_dir --mode run || {
+            echo "Export failed with status $?"
+            exit 1
+          }
+          echo "Export completed, checking output..."
+          ls -la output_dir  # Debug: List output files
 
       - name: 📦 Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3

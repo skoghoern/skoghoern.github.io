@@ -25,7 +25,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src=mo.notebook_location() / "public" / "room-image.png",
+        src=str(mo.notebook_location() / "public" / "room-image.png"),
         width="60%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )

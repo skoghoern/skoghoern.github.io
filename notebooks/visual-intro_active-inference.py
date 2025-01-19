@@ -59,7 +59,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src="public/env-agent.jpg",
+        src=str(mo.notebook_location() / "public" / "env-agent.jpg"),
         width="50%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -87,7 +87,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src="public/loop-environment.jpg",
+        src=str(mo.notebook_location() / "public" / "loop-environment.jpg"),
         width="40%",
         style={"display": "block", "margin": "0 auto"}  # CSS for centering
     )
@@ -127,7 +127,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src="public/loop-environment-agent.png",
+        src=str(mo.notebook_location() / "public" / "loop-environment-agent.png"),
         width="50%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -168,7 +168,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src="public/room-plan.png",
+        src=str(mo.notebook_location() / "public" / "room-plan.png"),
         width="20%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -184,7 +184,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     room_plan_obj = mo.image(
-        src="public/room-plan-objects.png",
+        src=str(mo.notebook_location() / "public" / "room-plan-objects.png"),
         width="20%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -233,7 +233,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     A_matrix = mo.image(
-        src="public/A-matrix.png",
+        src=str(mo.notebook_location() / "public" / "A-matrix.png"),
         width="40%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -268,7 +268,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     A_matrix_filled = mo.image(
-        src="public/A-matrix_filled.png",
+        src=str(mo.notebook_location() / "public" / "A-matrix_filled.png"),
         width="40%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -297,7 +297,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     loop_a = mo.image(
-        src="public/loop-environment-agent_A_matrix.png",
+        src=str(mo.notebook_location() / "public" / "loop-environment-agent_A_matrix.png"),
         width="40%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -333,7 +333,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src="public/observation_chair.png",
+        src=str(mo.notebook_location() / "public" / "observation_chair.png"),
         width="20%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -361,7 +361,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src="public/VFE_A.png",
+        src=str(mo.notebook_location() / "public" / "VFE_A.png"),
         width="100%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -405,7 +405,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     D_matrix = mo.image(
-        src="public/D_matrix.png",
+        src=str(mo.notebook_location() / "public" / "D_matrix.png"),
         width="15%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -444,7 +444,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src="public/VFE_A_D.png",
+        src=str(mo.notebook_location() / "public" / "VFE_A_D.png"),
         width="100%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -492,7 +492,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     B_matrix = mo.image(
-        src="public/B_matrix.png",
+        src=str(mo.notebook_location() / "public" / "B_matrix.png"),
         width="90%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )

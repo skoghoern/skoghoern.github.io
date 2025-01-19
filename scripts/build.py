@@ -54,52 +54,120 @@ def generate_index(all_notebooks: List[str], output_dir: str) -> None:
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Marimo Notebooks</title>
+    <title>Active Inference Learning Path</title>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   </head>
-  <body class="bg-gray-50 dark:bg-gray-900" x-data="{ darkMode: false }">
-    <div class="max-w-4xl mx-auto p-8">
-      <nav class="flex justify-between items-center mb-12">
-        <img src="https://raw.githubusercontent.com/marimo-team/marimo/main/docs/_static/marimo-logotype-thick.svg" 
-             alt="marimo" 
-             class="h-12 dark:invert" />
-        <button @click="darkMode = !darkMode" 
-                class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700">
-          <span x-show="!darkMode">🌙</span>
-          <span x-show="darkMode">☀️</span>
+  <body class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen" 
+        x-data="{ darkMode: localStorage.getItem('darkMode') === 'true', activeTab: 'all' }"
+        :class="{ 'dark': darkMode }">
+    
+    <!-- Header -->
+    <header class="border-b dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm fixed w-full z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+          <div class="flex items-center space-x-8">
+            <img src="https://raw.githubusercontent.com/marimo-team/marimo/main/docs/_static/marimo-logotype-thick.svg" 
+                 alt="marimo" 
+                 class="h-8 dark:invert" />
+          </div>
+          <div class="flex items-center space-x-4">
+            <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)"
+                    class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+              <i class="fas" :class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
+            </button>
+            <a href="https://github.com/your-username/your-repo" 
+               class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+              <i class="fab fa-github text-xl"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <!-- Hero Section -->
+      <div class="text-center mb-16">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          Learn Active Inference
+        </h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          Explore interactive notebooks and learn about Active Inference, from basic concepts to advanced applications.
+        </p>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="flex justify-center mb-8 space-x-4">
+        <button @click="activeTab = 'all'"
+                :class="{ 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300': activeTab === 'all' }"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          All
         </button>
-      </nav>
-      <div class="grid md:grid-cols-2 gap-6">
+        <button @click="activeTab = 'intro'"
+                :class="{ 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300': activeTab === 'intro' }"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          Introduction
+        </button>
+        <button @click="activeTab = 'advanced'"
+                :class="{ 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300': activeTab === 'advanced' }"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          Advanced
+        </button>
+      </div>
+
+      <!-- Notebooks Grid -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 """
             )
+            # Group notebooks by category
             for notebook in all_notebooks:
                 notebook_name = notebook.split("/")[-1].replace(".py", "")
                 display_name = notebook_name.replace("_", " ").title()
                 is_app = notebook.startswith("apps/")
+                category = "intro" if "intro" in notebook_name.lower() else "advanced"
 
                 f.write(
-                    f'''      <div class="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all">
-          <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{display_name}</h3>
-            <span class="px-2 py-1 text-xs rounded-full {'bg-blue-100 text-blue-800' if is_app else 'bg-green-100 text-green-800'}">
-              {('App' if is_app else 'Notebook')}
-            </span>
+                    f'''        <div x-show="activeTab === 'all' || activeTab === '{category}'"
+             class="group bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{display_name}</h3>
+              <span class="px-3 py-1 text-xs font-medium rounded-full {'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' if is_app else 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'}">
+                {('App' if is_app else 'Notebook')}
+              </span>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+              {category.title()} level notebook about Active Inference concepts.
+            </p>
+            <a href="{notebook.replace('.py', '.html')}" 
+               class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-colors w-full justify-center">
+              Open Notebook
+              <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+            </a>
           </div>
-          <a href="{notebook.replace('.py', '.html')}" 
-             class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-colors">
-            Open {('App' if is_app else 'Notebook')}
-            <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </a>
         </div>\n'''
                 )
             f.write(
                 """      </div>
-    </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-900 border-t dark:border-gray-800">
+      <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="text-center text-gray-600 dark:text-gray-400 text-sm">
+          Built with <i class="fas fa-heart text-red-500"></i> using Marimo Notebooks
+        </div>
+      </div>
+    </footer>
+
     <script>
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      // Initialize dark mode from localStorage or system preference
+      if (localStorage.getItem('darkMode') === null && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         document.documentElement.classList.add('dark')
       }
     </script>

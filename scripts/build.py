@@ -92,6 +92,11 @@ def generate_index(all_notebooks: List[str], output_dir: str) -> None:
     <header class="border-b dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm fixed w-full z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-4">
+          <div class="flex items-center space-x-8">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Brain.svg" 
+                 alt="brain symbol" 
+                 class="h-8 dark:invert" />
+          </div>
           <div class="flex items-center space-x-4">
             <button @click="toggleDark()"
                     class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
@@ -121,17 +126,17 @@ def generate_index(all_notebooks: List[str], output_dir: str) -> None:
       <!-- Filter Tabs -->
       <div class="flex justify-center mb-8 space-x-4">
         <button @click="activeTab = 'all'"
-                :class="{ 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300': activeTab === 'all' }"
+                :class="{ 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300': activeTab === 'all', 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white': activeTab !== 'all' }"
                 class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
           All
         </button>
         <button @click="activeTab = 'intro'"
-                :class="{ 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300': activeTab === 'intro' }"
+                :class="{ 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300': activeTab === 'intro', 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white': activeTab !== 'intro' }"
                 class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
           Introduction
         </button>
         <button @click="activeTab = 'advanced'"
-                :class="{ 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300': activeTab === 'advanced' }"
+                :class="{ 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300': activeTab === 'advanced', 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white': activeTab !== 'advanced' }"
                 class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
           Advanced
         </button>

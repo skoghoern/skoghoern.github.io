@@ -54,30 +54,55 @@ def generate_index(all_notebooks: List[str], output_dir: str) -> None:
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>marimo</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Marimo Notebooks</title>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="font-sans max-w-2xl mx-auto p-8 leading-relaxed">
-    <div class="mb-8">
-      <img src="https://raw.githubusercontent.com/marimo-team/marimo/main/docs/_static/marimo-logotype-thick.svg" alt="marimo" class="h-20" />
-    </div>
-    <div class="grid gap-4">
+  <body class="bg-gray-50 dark:bg-gray-900" x-data="{ darkMode: false }">
+    <div class="max-w-4xl mx-auto p-8">
+      <nav class="flex justify-between items-center mb-12">
+        <img src="https://raw.githubusercontent.com/marimo-team/marimo/main/docs/_static/marimo-logotype-thick.svg" 
+             alt="marimo" 
+             class="h-12 dark:invert" />
+        <button @click="darkMode = !darkMode" 
+                class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700">
+          <span x-show="!darkMode">🌙</span>
+          <span x-show="darkMode">☀️</span>
+        </button>
+      </nav>
+      <div class="grid md:grid-cols-2 gap-6">
 """
             )
             for notebook in all_notebooks:
                 notebook_name = notebook.split("/")[-1].replace(".py", "")
                 display_name = notebook_name.replace("_", " ").title()
+                is_app = notebook.startswith("apps/")
 
                 f.write(
-                    f'      <div class="p-4 border border-gray-200 rounded">\n'
-                    f'        <h3 class="text-lg font-semibold mb-2">{display_name}</h3>\n'
-                    f'        <div class="flex gap-2">\n'
-                    f'          <a href="{notebook.replace(".py", ".html")}" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">Open Notebook</a>\n'
-                    f"        </div>\n"
-                    f"      </div>\n"
+                    f'''      <div class="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all">
+          <div class="flex justify-between items-start mb-4">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{display_name}</h3>
+            <span class="px-2 py-1 text-xs rounded-full {'bg-blue-100 text-blue-800' if is_app else 'bg-green-100 text-green-800'}">
+              {('App' if is_app else 'Notebook')}
+            </span>
+          </div>
+          <a href="{notebook.replace('.py', '.html')}" 
+             class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-colors">
+            Open {('App' if is_app else 'Notebook')}
+            <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>\n'''
                 )
             f.write(
-                """    </div>
+                """      </div>
+    </div>
+    <script>
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark')
+      }
+    </script>
   </body>
 </html>"""
             )

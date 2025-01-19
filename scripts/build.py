@@ -58,17 +58,42 @@ def generate_index(all_notebooks: List[str], output_dir: str) -> None:
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+      // Add Tailwind dark mode configuration
+      tailwind.config = {
+        darkMode: 'class'
+      }
+    </script>
   </head>
   <body class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen" 
-        x-data="{ darkMode: localStorage.getItem('darkMode') === 'true', activeTab: 'all' }"
-        :class="{ 'dark': darkMode }">
+        x-data="{ 
+          darkMode: localStorage.getItem('darkMode') === 'true',
+          activeTab: 'all',
+          toggleDark() {
+            this.darkMode = !this.darkMode;
+            localStorage.setItem('darkMode', this.darkMode);
+            if (this.darkMode) {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
+          }
+        }"
+        x-init="$watch('darkMode', value => {
+          if (value) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        });
+        if (darkMode) document.documentElement.classList.add('dark');">
     
     <!-- Header -->
     <header class="border-b dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm fixed w-full z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-4">
           <div class="flex items-center space-x-4">
-            <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)"
+            <button @click="toggleDark()"
                     class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
               <i class="fas" :class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
             </button>

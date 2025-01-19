@@ -651,7 +651,7 @@ def _(mo):
             mo.nav_menu(
                 {
                     "#/home": f"{mo.icon('lucide:home')} Home",
-                    "#/about": f"{mo.icon('lucide:user')} About",
+                    "#/reading": f"{mo.icon('lucide:book')} Reading",
                     "#/programming": f"{mo.icon('lucide:computer')} Programming",
                     "Links": {
                         "https://www.activeinference.institute/": "Active Inference Institute"

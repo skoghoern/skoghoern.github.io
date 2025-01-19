@@ -1,0 +1,12 @@
+# Created by venv; see https://docs.python.org/3/library/venv.h
+
+# Python virtual environment
+venv/
+ENV/
+env/
+.env/
+
+# Python byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class

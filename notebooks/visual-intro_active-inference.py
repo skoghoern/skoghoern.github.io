@@ -66,13 +66,13 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""Now lets take a closer look at these two elements.""")
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""### 1. The enviornment - the world""")
     return
@@ -118,7 +118,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""### 3. Closing the loop""")
     return
@@ -147,7 +147,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""# Active Inference Implementation as Code""")
     return
@@ -248,7 +248,7 @@ def _(mo):
             "Hint:": "focus on possible states(locations) and possible observations (objects)."
         }
     )
-    mo.accordion(
+    question_a_matrix = mo.accordion(
         {
             "Question: How can we write this down as a matrix? Try to predict how this matrix should look like?": [
                 hint_a_matrix,
@@ -256,7 +256,8 @@ def _(mo):
             ]
         }
     )
-    return A_matrix, answer_a_matrix, hint_a_matrix
+    mo.callout(question_a_matrix, kind="info")
+    return A_matrix, answer_a_matrix, hint_a_matrix, question_a_matrix
 
 
 @app.cell(hide_code=True)
@@ -283,7 +284,7 @@ def _(mo):
             "Hint:": "look at the room plan. You can enter a 1 (equal to 100%) where each object is located on the field index."
         }
     )
-    mo.accordion(
+    question_a_matrix_filled = mo.accordion(
         {
             "Question: Give each cell in the A matrix a value.": [
                 hint_a_matrix_filled,
@@ -291,7 +292,13 @@ def _(mo):
             ]
         }
     )
-    return A_matrix_filled, answer_a_matrix_filled, hint_a_matrix_filled
+    mo.callout(question_a_matrix_filled, kind="info")
+    return (
+        A_matrix_filled,
+        answer_a_matrix_filled,
+        hint_a_matrix_filled,
+        question_a_matrix_filled,
+    )
 
 
 @app.cell(hide_code=True)
@@ -308,7 +315,7 @@ def _(mo):
     hint_loop_a = mo.accordion(
         {"Hint:": "which arrow connects hidden states with observations?"}
     )
-    mo.accordion(
+    question_loop_a = mo.accordion(
         {
             "Question: Where in our action-perception loop should we place this matrix?": [
                 hint_loop_a,
@@ -316,7 +323,9 @@ def _(mo):
             ]
         }
     )
-    return answer_loop_a, hint_loop_a, loop_a
+
+    mo.callout(question_loop_a, kind="info")
+    return answer_loop_a, hint_loop_a, loop_a, question_loop_a
 
 
 @app.cell(hide_code=True)
@@ -418,7 +427,7 @@ def _(mo):
     hint_d = mo.accordion(
         {"Hint:": "Check the field index of the bed and lower left corner chair."}
     )
-    mo.accordion(
+    question_d = mo.accordion(
         {
             "Question: Given that information, how should the D Matrix look like?": [
                 hint_d,
@@ -426,7 +435,8 @@ def _(mo):
             ]
         }
     )
-    return D_matrix, answer_d, hint_d
+    mo.callout(question_d, kind="info")
+    return D_matrix, answer_d, hint_d, question_d
 
 
 @app.cell(hide_code=True)
@@ -464,7 +474,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(
         """
@@ -505,7 +515,7 @@ def _(mo):
     hint_b = mo.accordion(
         {"Hint:": "Check how many possible room fields we have."}
     )
-    mo.accordion(
+    question_b = mo.accordion(
         {
             "Question: What dimensions should our B Matrix have?": [
                 hint_b,
@@ -513,7 +523,9 @@ def _(mo):
             ]
         }
     )
-    return B_matrix, answer_b, hint_b
+
+    mo.callout(question_b, kind="info")
+    return B_matrix, answer_b, hint_b, question_b
 
 
 @app.cell(hide_code=True)
@@ -524,123 +536,202 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    bu_val = 0
-    button = mo.ui.button(
-        value=bu_val,
-        on_click=lambda value: value + 1,
-        label=f"{bu_val}",
-        kind="neutral",
+    B_stay = mo.image(
+        src=str(mo.notebook_location() / "public" / "B_stay.png"),
+        width="50%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
-    button
-    return bu_val, button
-
-
-@app.cell
-def _(button):
-    button.value
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    import random
-
-    # Create a state object to store the index of the clicked button
-    get_state, set_state = mo.state(None)
-
-    # Create an mo.ui.array of buttons
-    buttons = mo.ui.array(
-        [
-            mo.ui.button(
-                label="--",
-                kind="neutral",
-                on_change=lambda v, i=i: set_state(
-                    i
-                ),  # Store the index of the clicked button
-            )
-            for i in range(0, 9)
-        ]
+    B_stay_example = mo.image(
+        src=str(mo.notebook_location() / "public" / "B_stay_example.png"),
+        width="50%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
 
-
-    # Define a function to update the button kind when clicked
-    def update_button_kind():
-        clicked_index = get_state()
-        if clicked_index is not None:
-            # Change the kind of the clicked button to "success"
-            buttons[clicked_index].kind = "success"
-            buttons[clicked_index].label = "✔"
-            # Reset the state to avoid multiple updates
-            set_state(None)
-
-
-    # Subscribe to state changes to trigger the update function
-    mo.subscribe(get_state, update_button_kind)
-
-    # Display the buttons in a grid
-    button_row = mo.hstack(buttons, justify="center", gap=0)
-    mo.vstack([button_row for i in range(0, 9)], gap=0)
-    return (
-        button_row,
-        buttons,
-        get_state,
-        random,
-        set_state,
-        update_button_kind,
-    )
-
-
-@app.cell
-def _(mo, random):
-    # Create a state object that will store the index of the
-    # clicked button
-    get_statea, set_statea = mo.state(None)
-
-    # Create an mo.ui.array of buttons - a regular Python list won't work.
-    buttonsa = mo.ui.array(
-        [
-            mo.ui.button(
-                label="button " + str(i), on_change=lambda v, i=i: set_statea(i)
-            )
-            for i in range(random.randint(2, 5))
-        ]
-    )
-
-    # Put the buttons array into the table
-    table = mo.ui.table(
+    answer_b_s = mo.accordion(
         {
-            "Action": ["Action Name"] * len(buttonsa),
-            "Trigger": list(buttonsa),
+            "Answer:": f"{B_stay} The matrix shows, that if we stay, the field index of the previous moment (rows) is the same as the current moment (columns). <br> {B_stay_example}We can interpret this as the following: being currently on field 6 (= row index 6) performing the action ""Stay"" will bring us to field 6 (= highlighted column index in row 6)."
         }
     )
-    table
-    return buttonsa, get_statea, set_statea, table
+    hint_b_s = mo.accordion(
+        {"Hint:": "If we stay on one field, how does it affect the position in the next moment?"}
+    )
+    question_b_s = mo.accordion(
+        {
+            "Question: Which value should each field get??": [
+                hint_b_s,
+                answer_b_s,
+            ]
+        }
+    )
 
-
-@app.cell
-def _(get_state):
-    get_state()
-    return
-
-
-@app.cell(hide_code=True)
-def _():
-    # condition is a boolean, True or False
-    show_code = True
-    "condition is True" if show_code else None
-    return (show_code,)
+    mo.callout(question_b_s, kind="info")
+    return B_stay, B_stay_example, answer_b_s, hint_b_s, question_b_s
 
 
 @app.cell(hide_code=True)
 def _(mo):
-    user_info = mo.md(
+    mo.md(
+        r"""
+        Great. Now lets do the same for moving "Right".
+
+        To fill this out just consider the consequence of going right for each field.
+        So imagine you start on field 0 at t=0. Where will you be after moving one step to the right? A: field 1 at t=1.
+
+        The same logic applies to field 1 at t=0.
+
+        We have one special case. What whene we are at one of the rightside fields e.g. on field 2? How does going one step to right look like in this case? A: Correct, it is not possible, we will remain on field 2 at t=1
+
+        With these thoughts we can plot our "right"-action matrix:
         """
-        - What's your name?: {name}
-        - When were you born?: {birthday}
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(mo.notebook_location() / "public" / "B_right.png"),
+        width="50%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
         """
-    ).batch(name=mo.ui.text(), birthday=mo.ui.date())
-    user_info
-    return (user_info,)
+        Now lets do the same for the left step.
+        (Basically it is the same matrix just turned by 180°).
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(mo.notebook_location() / "public" / "B_left.png"),
+        width="50%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""The same we do for the Up and Down actions.""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    up = mo.image(
+        src=str(mo.notebook_location() / "public" / "B_up.png"),
+        width="100%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    down = mo.image(
+        src=str(mo.notebook_location() / "public" / "B_down.png"),
+        width="100%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    mo.hstack([up,down])
+    return down, up
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        So our B matrix actually consists of 5x9x9 matrices or also called object array in pymdp or tensor in other Programming languages.
+
+        Let’s now explore what it looks to “take” an action, using matrix-vector product of an action-conditioned “slice” of the  $\mathbf{B}$ array and a previous state vector.
+
+        So remember we assumed we started on our bed. We convert this into its corresponding index (i=3) and then use a one-hot encoding vector, meaning that we render only the current position as 1 (all other fields as 0), just identical to the D matrix (in fact in the very beginning of our loop we will use the D matrix for this, since we havent performed any previous action. So its kind of used to initialize our loop).
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(mo.notebook_location() / "public" / "current_state_3.png"),
+        width="10%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""Then we calculate the next field at t=1 after having gone one step down. We can do this by using a matrix-vector product of the current state vector and the corresponding matrix for the "Down" action from our B Matrix.""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(mo.notebook_location() / "public" / "current_state_B.png"),
+        width="60%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        You can think of this calculation as if we would move the current state vector step-wise over the B matrix slice, multiplying each overlying values. Then summing up the resulting values per each column.
+        In our example this means: only keeping the fields white when both fields are white.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(mo.notebook_location() / "public" / "current_state_B_result.png"),
+        width="70%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""So moving one step down from field 3 brings us to field 6.""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""### Variational Inference Calculation - Where are we based on our observation?""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+
+        Let's insert this calculation into our above procedure. So instead of using our predicted state (location). we will use our intial prior D (we are on the bed) as well as the corresponding B matrix slice for our planned action: going one step down.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(mo.notebook_location() / "public" / "VFE_calculation.png"),
+        width="100%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
 
 
 @app.cell(hide_code=True)

@@ -67,17 +67,12 @@ def generate_index(all_notebooks: List[str], output_dir: str) -> None:
     <header class="border-b dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm fixed w-full z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-4">
-          <div class="flex items-center space-x-8">
-            <img src="https://raw.githubusercontent.com/marimo-team/marimo/main/docs/_static/marimo-logotype-thick.svg" 
-                 alt="marimo" 
-                 class="h-8 dark:invert" />
-          </div>
           <div class="flex items-center space-x-4">
             <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)"
                     class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
               <i class="fas" :class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
             </button>
-            <a href="https://github.com/your-username/your-repo" 
+            <a href="https://github.com/skoghoern/skoghoern.github.io" 
                class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
               <i class="fab fa-github text-xl"></i>
             </a>

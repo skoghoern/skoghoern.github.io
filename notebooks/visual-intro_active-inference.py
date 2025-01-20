@@ -34,7 +34,15 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md(r"""May I welcome you as a guest in my little room? This is where I sleep, study, watch Tv etc. Now we might all know this situation, we are in bed and suddenly we get very hungry. We want these yummy cookies that we left on the table before. The only problem - the light is turned off. We might have all been in such a situation already. How do we get to the cookies only moving in the dark? Yes we start being a zombie, hands out and trying to touch everything around us, to get a clue where we currently are. we might touch something metallic - ouch that was the trash bin in the corner. we might feel something soft beneath our feet - yes that's the carpet in the middle of the room. We know that the table where we left the cookies is just upfront. we go two little steps and yep, knock on something wooden and a moment later we have that cookie box in our hand that we were craving for. Yummy!""")
+    mo.md(
+        r"""
+        Have you ever woken up in the middle of the night, craving a midnight snack? You remember leaving those delicious cookies on your desk, but there's one small problem - the room is pitch dark. We've all been there!
+
+        What happens next is fascinating: without even thinking about it, your brain executes a remarkable navigation strategy. You carefully stretch out your hands and start moving through the darkness. Maybe you brush against something cold and metallic - ah, that's the radiator by the door. Your feet feel the soft carpet in the middle of the room, giving you another clue about your location. With growing confidence about where you are, you take two careful steps forward until your hands find the familiar wooden surface of your desk. Success! A moment later, you're enjoying those cookies you've been craving.
+
+        This everyday experience perfectly illustrates how our brains solve complex problems through a combination of prediction, action, and sensory feedback. In this tutorial, we'll explore this process through the lens of Active Inference, using this relatable scenario to understand how our brains navigate uncertainty to achieve our goals.
+        """
+    )
     return
 
 
@@ -48,9 +56,13 @@ def _(mo):
 def _(mo):
     mo.md(
         """
-        Let's explore how did this actually work? Let's try to simulate what seemed relatively intuitive and what we do every day.
-        Let’s consider how we can illustrate the process of us staggering through the room. What is actually happening? What elements do we need to recreate this situation?
-        As already in the question: there are two elments: us and the room that interact with each other. We will plot it more generically, where us can be any active agent and the room can be any environment.
+        Now let's explore how this seemingly intuitive process actually works. While finding cookies in the dark might seem simple, there's some fascinating complexity behind it that we can simulate and understand.
+
+        To break this down, let's first identify the key elements at play. At its core, we have two main components that interact with each other:
+        1. The person (that's us!) trying to navigate
+        2. The room with all its objects and spaces
+
+        We can think about this more broadly: in any similar situation, we'll always have an active agent (like us) interacting with an environment (like the room). This framework applies not just to our cookie quest, but to many real-world scenarios where an agent needs to navigate and interact with its surroundings.
         """
     )
     return
@@ -74,13 +86,56 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md(r"""### 1. The enviornment - the world""")
+    mo.md("""### 1. The agent - us as person""")
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md("""When we think of our room there are two main variables that define it closer: the objects in the room that we can touch, and the position in the room. Since each object has a room position, those two variables are connected.""")
+    mo.md(
+        """
+        Let's take a closer look at our agent, ourselves in this case. To understand how we navigate in the dark, we can break down our capabilities into three key components:
+
+        #### 1.1. Observation/Perception States
+        These are our sensory inputs - in this case, what we can touch and feel. When we make contact with objects in the room, our brain receives this information as observations. For simplicity, we'll assume we can immediately identify objects by touch (like knowing it's a chair as soon as we feel it).
+
+        #### 1.2. Brain Processing
+        Our brain acts as the command center, processing all incoming sensory information. Like a sophisticated computer, it takes these observations and performs complex calculations to figure out two crucial things: where we are in the room, and what we should do next to reach those cookies. We'll represent these mental calculations in our upcoming diagrams as processing units within the brain.
+
+        #### 1.3. Action Generation
+        Finally, based on our brain's calculations, we take action. In our cookie quest, these actions are simple movements: going left, right, up, or down. Each action changes our position in the room, which in turn leads to new observations, creating a continuous cycle of perception and action.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(mo.notebook_location() / "public" / "loop-agent.png"),
+        width="40%",
+        style={"display": "block", "margin": "0 auto"}  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""### 2. The enviornment - the world""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        Now, looking at our environment - the room itself - we can identify two interconnected aspects:
+        1. The objects we can touch (like the chair, desk, or bed)
+        2. The positions in the room where these objects are located (room position)
+
+        These aspects are naturally linked - each object has its fixed position, and each position contains a specific object. This relationship will be crucial for understanding how we navigate the space.
+        """
+    )
     return
 
 
@@ -90,30 +145,6 @@ def _(mo):
         src=str(mo.notebook_location() / "public" / "loop-environment.jpg"),
         width="40%",
         style={"display": "block", "margin": "0 auto"}  # CSS for centering
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md("""### 2. The agent - us as person""")
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(
-        r"""
-        Let’s take a closer look to our agent, ourselves in this case. Can we subdivide our being into smaller building blocks?
-        I will propose that we can subdivide us in three main variables.
-
-        #### 2.1. Observation/Perception states
-        As we already stated in the environment part, there are the objects that we can touch. They ultimately become our observation states. For simplicity reasons these will be equal to the objects that we have in the room, assuming that we immediately know what object it is, by touching it.
-        #### 2.2. Brain
-        These information get send to our brain, located in a dark cave in our head. There it performes some calculations with the new obtained information, trying to understand where we are and what we need to do to get to our cookies. We will depict this calculation in our sketch below by the small boxes inside the brain.
-        #### 2.3. Action
-        And this directly brings us to our last variable: the actions that we perform based on our brains calculations. In our case this will be the movements we can do: going right, left, up or down. Ultimately changing our position in the room.
-        """
     )
     return
 
@@ -137,11 +168,12 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
-        r"""
-        We have gathered all necessary variables for the moment. Now let’s try to arrange them in a meaningful way.
-        Based on our current room position, we will have ceratain objects around us. while we can directly observe our room position in the dark, we can touch the objects. These will generate our observations. The observations then get send to our brain where we do some calculations. and finally decide to make an action, which to keep it simple, will only be our possible movements in the room. Thus changing our room postion. Which will generate new observations based on the objects around us and so on. The loop is closed.
+        """
+        We have gathered all necessary variables for the moment. Now let's try to arrange them in a meaningful way.
 
-        This is the main concept active inference relies upon. Everything from now will build up on this, refine part of it or scale it. But you already have the main idea of how our brain works.
+        Based on our current room position, we will have certain objects around us. While we can't directly see our room position in the dark, we can touch the objects. These touches generate our observations, which are then sent to our brain for processing. Our brain performs calculations based on these inputs and decides on an action - in our case, simple movements through the room. Each movement changes our room position, which leads to new objects within reach, generating new observations, and the cycle continues. The loop is closed.
+
+        This elegant cycle of perception, processing, and action is the foundation of active inference. Everything we'll explore from here builds upon this basic loop, either refining specific parts or scaling it to more complex scenarios. But you've already grasped the fundamental way our brains navigate uncertainty - whether we're searching for midnight snacks or solving complex problems!
         """
     )
     return
@@ -157,9 +189,41 @@ def _(mo):
 def _(mo):
     mo.md(
         """
-        Now how can we bring this into something that our computer can work with? We need to further abstract this scheme and  introduce some numbers and tables that our computer understands well.
+        In this tutorial, we'll break down our cookie-finding adventure into two key challenges that our brain solves:
 
-        To start off, let's try to abstract the image of my little room above into a reduced version, by drawing it down similar to a floor plan and arbitrarily dividing it into a 3x3 (3 times 3) grid. We provide each field with an index.
+        1. **Understanding Where We Are (Variational Free Energy)**
+           First, we'll explore how our brain figures out our location using touch-based observations. This process, known as minimizing Variational Free Energy (VFE), is like solving a puzzle where each touch gives us a new clue about our position.
+
+        2. **Deciding How to Move (Expected Free Energy)**
+           Then, we'll look at how our brain plans the best path to the cookies. This involves calculating Expected Free Energy (EFE) to choose actions that will most likely lead us to our goal while avoiding bumping into furniture!
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(mo.notebook_location() / "public" / "overview-VFE-EFE.png"),
+        width="50%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""### 0. Environment""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        Let's start by translating our room navigation problem into a format that a computer can understand. To do this, we need to convert our intuitive understanding into structured data—specifically, numbers and tables that can be processed mathematically.
+
+        To begin, we'll simplify the layout of our room into a more abstract representation. Imagine drawing a floor plan and dividing the space into a 3x3 grid. Each cell in this grid will be assigned an index, allowing us to systematically represent our environment and the objects within it.
         """
     )
     return
@@ -220,11 +284,21 @@ def _(mo):
 def _(mo):
     mo.md(
         """
-        Let’s focus on how we figure out where we are in the room. In our dark-room cookie quest, we relied on touch. By recognizing objects—like the trash bin, carpet, or table—we deduced our position. Our brain didn’t have a "bird’s-eye view" of the room. Instead, it worked like a detective, piecing together clues from what we touched (our observations) to infer our location (our state). To be able to do this it needed a certain map or cheat sheet, where it can look up, what being in touch with a certain object implies about the current room position, that the person is currently in. Since the brain doesn’t have direct access to the current position in the room, we will call them, as in active inference models typical, hidden states.
+        Let's explore one of the most fascinating aspects of our cookie quest: how our brain figures out where we are in the dark room. 
 
-        A hidden state represents the actual situation you’re in but can’t directly see or know—like your precise position in the dark. What you do have are observations (e.g., touching the table or the bed). To infer your hidden state from observations, your brain uses a model of how the world works.
+        Imagine you're playing detective, but instead of visual clues, you only have touch. When your hand brushes against objects—the cold metal of a trash bin, the soft texture of a carpet, or the smooth surface of a table—your brain uses these tactile clues to deduce your location. This process is remarkably sophisticated, yet we do it almost effortlessly.
 
-        So basically our brain evolves a function of the hidden states in respect to the observations. f(s)=o mapping each observation to a certain state.
+        But how does our brain make sense of these touch-based clues? Think of it like having an internal map or cheat sheet that we've developed over time. Every time we've spent in the room with the lights on, our brain has been quietly learning and creating associations: "When I touch the carpet, I must be in the middle of the room," or "If I feel the desk, I'm probably near the window." This mental map is crucial because our brain can't directly "see" our position—it has to figure it out indirectly through these learned associations.
+
+        In the language of active inference, we call our actual position in the room a "hidden state" because it's something real but not directly observable. Think of it like this:
+
+        - Hidden State: Your actual position (which you can't directly see)
+
+        - Observations: The objects you can touch and recognize
+
+        - Brain's Task: Using these observations to infer your hidden state
+
+        Mathematically, we can think of this as a function f(s)=o that maps hidden states (s) to observations (o). It's like having a decoder ring that helps translate what we touch into information about where we are.
         """
     )
     return
@@ -715,10 +789,43 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
+    mo.md("""Let's insert this calculation into our above procedure. So instead of using our predicted state (location). we will use our intial prior D (we are on the bed) as well as the corresponding B matrix slice for our planned action: going one step down.""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(mo.notebook_location() / "public" / "VFE_calculation.png"),
+        width="100%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
     mo.md(
         """
+        Let's pause for a moment and summarize our journey through understanding how our brain figures out where we are in the dark room. We've discovered that this process combines three key elements:
 
-        Let's insert this calculation into our above procedure. So instead of using our predicted state (location). we will use our intial prior D (we are on the bed) as well as the corresponding B matrix slice for our planned action: going one step down.
+        1. **Our Current Observations** (A Matrix)
+           - When we touch objects in the room, our brain uses the A matrix like a lookup table
+           - This matrix tells us which objects we might encounter at each possible location
+           - For example, touching a chair narrows down our possible positions to locations where chairs exist
+
+        2. **Our Initial Beliefs** (D Matrix)
+           - We start with some prior knowledge (like remembering we fell asleep on the bed)
+           - This initial belief is stored in our D matrix, representing our best guess before any new observations
+
+        3. **Our Movement History** (B Matrix)
+           - As we move around, the B matrix helps us track how our position changes
+           - Each action (like stepping left or right) updates our possible location
+           - This creates a continuous chain of position updates based on our movements
+
+        These components work together in a beautiful mathematical dance: our brain combines the evidence from what we touch (through the A matrix) with our previous beliefs (from D or B matrices) to create an increasingly accurate picture of our location. This process of combining evidence with beliefs is exactly what we call Variational Free Energy minimization - it's our brain's way of solving the puzzle of where we are in the dark.
+
+        Let's visualize how these elements fit into our perception-action loop:
         """
     )
     return
@@ -727,7 +834,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src=str(mo.notebook_location() / "public" / "VFE_calculation.png"),
+        src=str(mo.notebook_location() / "public" / "loop-environment-agent-brain-detailed-VFE_matrices.png"),
         width="100%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )

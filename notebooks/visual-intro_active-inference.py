@@ -239,6 +239,23 @@ def _(mo):
     return
 
 
+@app.cell
+def _():
+    from pymdp import utils
+    import itertools
+
+    """ Create  the grid locations in the form of a list of (Y, X) tuples -- HINT: use itertools """
+    grid_locations = list(itertools.product(range(3), repeat = 2))
+    print(grid_locations)
+    return grid_locations, itertools, utils
+
+
+@app.cell
+def _(grid_locations, plot_grid):
+    plot_grid(grid_locations)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""Now let's plot our objects from the room on the plan. This gives us the following table, with each of the nine room positions having each one belonging object.""")
@@ -266,7 +283,7 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md("""## 1. Understanding where we are - Variational Free Energy""")
+    mo.md("""## 1. Understanding where we are - Variational Free Energy (VFE)""")
     return
 
 
@@ -334,6 +351,26 @@ def _(mo):
     return A_matrix, answer_a_matrix, hint_a_matrix, question_a_matrix
 
 
+@app.cell
+def _(grid_locations):
+    """ Create variables for the storing the dimensionalities of the hidden states and the observations """
+
+    n_states = len(grid_locations)
+    n_observations = len(grid_locations) -1 #since we only have 8 objects (the chair is doubled)
+
+    print(f'Dimensionality of hidden states: {n_states}')
+    print(f'Dimensionality of observations: {n_observations}')
+    return n_observations, n_states
+
+
+@app.cell
+def _(n_observations, n_states, np):
+    """ Create the A matrix  """
+
+    A = np.zeros( (n_observations, n_states) )
+    return (A,)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""Great. Now we need to feed it with some values.""")
@@ -344,7 +381,7 @@ def _(mo):
 def _(mo):
     A_matrix_filled = mo.image(
         src=str(mo.notebook_location() / "public" / "A-matrix_filled.png"),
-        width="40%",
+        width="60%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
 
@@ -373,6 +410,29 @@ def _(mo):
         hint_a_matrix_filled,
         question_a_matrix_filled,
     )
+
+
+@app.cell
+def _(A, np):
+    """ Create an unambiguous or 'noise-less' mapping between hidden states and observations """
+    np.fill_diagonal(A, 1.0)  # Fill diagonal with 1's first
+
+    # Modify specific columns to match desired observation mapping
+    A[:, 6] = 0  # Clear column 6
+    A[2, 6] = 1  # Set row 2, column 6 to 1 (equal to chair is on field 6)
+
+    A[:, 7] = 0  # Clear column 7
+    A[6, 7] = 1  # Set row 6, column 7 to 1
+
+    A[:, 8] = 0  # Clear column 8
+    A[7, 8] = 1  # Set row 7, column 8 to 1
+    return
+
+
+@app.cell
+def _(A, plot_likelihood):
+    plot_likelihood(A, title_str = "A matrix or $P(o|s)$")
+    return
 
 
 @app.cell(hide_code=True)
@@ -423,6 +483,17 @@ def _(mo):
     return
 
 
+@app.cell
+def _(n_observations, np):
+    # Create array with length of observations, initialize with zeros
+    observation_chair = np.zeros(n_observations)
+    # enter 1 in the field 2 (equal to chair)
+    observation_chair[2]=1
+    #print to control
+    print(observation_chair)
+    return (observation_chair,)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -449,6 +520,22 @@ def _(mo):
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
     return
+
+
+@app.cell(hide_code=True)
+def _(A, log_stable, observation_chair, softmax):
+    # equal to first step/row of graphic
+    dot_next_state = observation_chair.dot(A)
+    print(f"o dot A={dot_next_state}")
+
+    #equal to second step of graphic
+    log_next_state = log_stable(dot_next_state)
+    # we reshape it to display it like a column vector
+    print(f"ln(next_state)={log_next_state.reshape(-1,1)}")
+
+    next_state = softmax(log_next_state)
+    print(f"next_state={next_state}")
+    return dot_next_state, log_next_state, next_state
 
 
 @app.cell(hide_code=True)
@@ -513,6 +600,25 @@ def _(mo):
     return D_matrix, answer_d, hint_d, question_d
 
 
+@app.cell
+def _(n_states, np, plot_beliefs, utils):
+    """ Create a D vector, basically a belief that the agent has about its own starting location """
+
+    # Create array with length of observations, initialize with zeros
+    D = np.zeros(n_states)
+
+    # since we might be in bed (field 3) or in the lower left corner (field 6)
+    D[3] = 1
+    D[6] = 1
+
+    # normalize values so that all values add up to 1
+    D = utils.norm_dist(D)
+
+    """ Let's look at the prior over hidden states """
+    plot_beliefs(D, title_str = "Prior beliefs over states")
+    return (D,)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -533,6 +639,23 @@ def _(mo):
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
     return
+
+
+@app.cell
+def _(D, log_next_state, log_stable, plot_beliefs, softmax):
+    # equal to first step/row of graphic
+    # dot_next_state = observation_chair.dot(A) # already calculated above
+
+    #equal to second step of graphic
+    log_D = log_stable(D)
+    # log_next_state = log_stable(dot_next_state) # already calculated above
+
+    # 3rd and 4th row of graphic, taking the softmax of the sum of D and guessed_state
+    updated_state = softmax(log_D + log_next_state)
+    print(f"updated_state={updated_state}")
+    """ Let's look at the updated belief over hidden states """
+    plot_beliefs(updated_state, title_str = "Updated beliefs over states")
+    return log_D, updated_state
 
 
 @app.cell(hide_code=True)
@@ -714,6 +837,43 @@ def _(mo):
     return down, up
 
 
+@app.cell
+def _(grid_locations, np):
+    actions = ["UP", "DOWN", "LEFT", "RIGHT", "STAY"]
+
+    def create_B_matrix():
+      B = np.zeros( (len(grid_locations), len(grid_locations), len(actions)) )
+
+      for action_id, action_label in enumerate(actions):
+
+        for curr_state, grid_location in enumerate(grid_locations):
+
+          y, x = grid_location
+
+          if action_label == "UP":
+            next_y = y - 1 if y > 0 else y 
+            next_x = x
+          elif action_label == "DOWN":
+            next_y = y + 1 if y < 2 else y 
+            next_x = x
+          elif action_label == "LEFT":
+            next_x = x - 1 if x > 0 else x 
+            next_y = y
+          elif action_label == "RIGHT":
+            next_x = x + 1 if x < 2 else x 
+            next_y = y
+          elif action_label == "STAY":
+            next_x = x
+            next_y = y
+          new_location = (next_y, next_x)
+          next_state = grid_locations.index(new_location)
+          B[next_state, curr_state, action_id] = 1.0
+      return B
+
+    B = create_B_matrix()
+    return B, actions, create_B_matrix
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -736,6 +896,18 @@ def _(mo):
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
     return
+
+
+@app.cell
+def _(n_states, plot_beliefs, utils):
+    """ Define a starting location""" 
+    starting_location = 3
+
+    """  and create a state vector out of it """
+    starting_state = utils.onehot(starting_location, n_states)
+    print(starting_state)
+    plot_beliefs(starting_state, "Categorical distribution over the starting state")
+    return starting_location, starting_state
 
 
 @app.cell(hide_code=True)
@@ -775,6 +947,26 @@ def _(mo):
     return
 
 
+@app.cell
+def _(
+    B,
+    actions,
+    grid_locations,
+    plot_beliefs,
+    plot_point_on_grid,
+    starting_state,
+):
+    """ Generate the next state vector, given the starting state and the B matrix"""
+    down_action_idx = actions.index("DOWN") 
+    next_state_down = B[:,:, down_action_idx].dot(starting_state) # input the indices to the B matrix
+    """ Plot the distribution of the vector"""
+    plot_beliefs(next_state_down, "Categorical distribution over the starting state")
+
+    """ Plot the next state, after taking the action over the grid """
+    plot_point_on_grid(next_state_down, grid_locations)
+    return down_action_idx, next_state_down
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""So moving one step down from field 3 brings us to field 6.""")
@@ -801,6 +993,18 @@ def _(mo):
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
     return
+
+
+@app.cell
+def _(log_stable, next_state, next_state_down, plot_beliefs, softmax):
+    # first row of graphic
+    # use 
+    updated_state_action = softmax(log_stable(next_state_down)+log_stable(next_state))
+    print(updated_state_action)
+    """ Plot the distribution of the vector"""
+    plot_beliefs(next_state_down, "Categorical distribution over the starting state")
+
+    return (updated_state_action,)
 
 
 @app.cell(hide_code=True)
@@ -843,6 +1047,12 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
+    mo.md("""## 2. What is our best action? - Expected free energy (EFE)""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
     mo.sidebar(
         [
             mo.md("# Active Inference"),
@@ -866,6 +1076,72 @@ def _(mo):
 def _():
     import marimo as mo
     return (mo,)
+
+
+@app.cell(hide_code=True)
+def _(n_observations, n_states, np, plt, sns):
+    def plot_likelihood(matrix, xlabels = list(range(n_states)), ylabels = list(range(n_observations)), title_str = "Likelihood distribution (A)"):
+        """
+        Plots a 2-D likelihood matrix as a heatmap
+        """
+
+        if not np.isclose(matrix.sum(axis=0), 1.0).all():
+          raise ValueError("Distribution not column-normalized! Please normalize (ensure matrix.sum(axis=0) == 1.0 for all columns)")
+
+        fig = plt.figure(figsize = (6,6))
+        ax = sns.heatmap(matrix, xticklabels = xlabels, yticklabels = ylabels, cmap = 'gray', cbar = False, vmin = 0.0, vmax = 1.0)
+        plt.title(title_str)
+        plt.show()
+
+    def plot_grid(grid_locations, num_x = 3, num_y = 3 ):
+        """
+        Plots the spatial coordinates of GridWorld as a heatmap, with each (X, Y) coordinate 
+        labeled with its linear index (its `state id`)
+        """
+
+        grid_heatmap = np.zeros((num_x, num_y))
+        for linear_idx, location in enumerate(grid_locations):
+          y, x = location
+          grid_heatmap[y, x] = linear_idx
+        sns.set(font_scale=1.5)
+        sns.heatmap(grid_heatmap, annot=True, cbar = False, fmt='.0f', cmap='crest')
+        plt.show()
+
+    def plot_point_on_grid(state_vector, grid_locations):
+        """
+        Plots the current location of the agent on the grid world
+        """
+        state_index = np.where(state_vector)[0][0]
+        y, x = grid_locations[state_index]
+        grid_heatmap = np.zeros((3,3))
+        grid_heatmap[y,x] = 1.0
+        sns.heatmap(grid_heatmap, cbar = False, fmt='.0f')
+        plt.show()
+
+    def plot_beliefs(belief_dist, title_str=""):
+        """
+        Plot a categorical distribution or belief distribution, stored in the 1-D numpy vector `belief_dist`
+        """
+
+        if not np.isclose(belief_dist.sum(), 1.0):
+          raise ValueError("Distribution not normalized! Please normalize")
+
+        plt.grid(zorder=0)
+        plt.bar(range(belief_dist.shape[0]), belief_dist, color='r', zorder=3)
+        plt.xticks(range(belief_dist.shape[0]))
+        plt.title(title_str)
+        plt.show()
+    return plot_beliefs, plot_grid, plot_likelihood, plot_point_on_grid
+
+
+@app.cell(hide_code=True)
+def _():
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    from pymdp.maths import softmax
+    from pymdp.maths import spm_log_single as log_stable
+    return log_stable, np, plt, sns, softmax
 
 
 if __name__ == "__main__":

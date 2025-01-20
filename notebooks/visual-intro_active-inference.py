@@ -114,7 +114,7 @@ def _(mo):
     mo.image(
         src=str(mo.notebook_location() / "public" / "loop-agent.png"),
         width="40%",
-        style={"display": "block", "margin": "0 auto"}  # CSS for centering
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
     return
 
@@ -144,7 +144,7 @@ def _(mo):
     mo.image(
         src=str(mo.notebook_location() / "public" / "loop-environment.jpg"),
         width="40%",
-        style={"display": "block", "margin": "0 auto"}  # CSS for centering
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
     return
 
@@ -245,7 +245,7 @@ def _():
     import itertools
 
     """ Create  the grid locations in the form of a list of (Y, X) tuples -- HINT: use itertools """
-    grid_locations = list(itertools.product(range(3), repeat = 2))
+    grid_locations = list(itertools.product(range(3), repeat=2))
     print(grid_locations)
     return grid_locations, itertools, utils
 
@@ -353,21 +353,23 @@ def _(mo):
 
 @app.cell
 def _(grid_locations):
-    """ Create variables for the storing the dimensionalities of the hidden states and the observations """
+    """Create variables for the storing the dimensionalities of the hidden states and the observations"""
 
     n_states = len(grid_locations)
-    n_observations = len(grid_locations) -1 #since we only have 8 objects (the chair is doubled)
+    n_observations = (
+        len(grid_locations) - 1
+    )  # since we only have 8 objects (the chair is doubled)
 
-    print(f'Dimensionality of hidden states: {n_states}')
-    print(f'Dimensionality of observations: {n_observations}')
+    print(f"Dimensionality of hidden states: {n_states}")
+    print(f"Dimensionality of observations: {n_observations}")
     return n_observations, n_states
 
 
 @app.cell
 def _(n_observations, n_states, np):
-    """ Create the A matrix  """
+    """Create the A matrix"""
 
-    A = np.zeros( (n_observations, n_states) )
+    A = np.zeros((n_observations, n_states))
     return (A,)
 
 
@@ -414,7 +416,8 @@ def _(mo):
 
 @app.cell
 def _(A, np):
-    """ Create an unambiguous or 'noise-less' mapping between hidden states and observations """
+    """Create an unambiguous or 'noise-less' mapping between hidden states and observations"""
+
     np.fill_diagonal(A, 1.0)  # Fill diagonal with 1's first
 
     # Modify specific columns to match desired observation mapping
@@ -431,14 +434,18 @@ def _(A, np):
 
 @app.cell
 def _(A, plot_likelihood):
-    plot_likelihood(A, title_str = "A matrix or $P(o|s)$")
+    plot_likelihood(A, title_str="A matrix or $P(o|s)$")
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     loop_a = mo.image(
-        src=str(mo.notebook_location() / "public" / "loop-environment-agent_A_matrix.png"),
+        src=str(
+            mo.notebook_location()
+            / "public"
+            / "loop-environment-agent_A_matrix.png"
+        ),
         width="40%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -488,8 +495,8 @@ def _(n_observations, np):
     # Create array with length of observations, initialize with zeros
     observation_chair = np.zeros(n_observations)
     # enter 1 in the field 2 (equal to chair)
-    observation_chair[2]=1
-    #print to control
+    observation_chair[2] = 1
+    # print to control
     print(observation_chair)
     return (observation_chair,)
 
@@ -528,10 +535,10 @@ def _(A, log_stable, observation_chair, softmax):
     dot_next_state = observation_chair.dot(A)
     print(f"o dot A={dot_next_state}")
 
-    #equal to second step of graphic
+    # equal to second step of graphic
     log_next_state = log_stable(dot_next_state)
     # we reshape it to display it like a column vector
-    print(f"ln(next_state)={log_next_state.reshape(-1,1)}")
+    print(f"ln(next_state)={log_next_state.reshape(-1, 1)}")
 
     next_state = softmax(log_next_state)
     print(f"next_state={next_state}")
@@ -602,7 +609,7 @@ def _(mo):
 
 @app.cell
 def _(n_states, np, plot_beliefs, utils):
-    """ Create a D vector, basically a belief that the agent has about its own starting location """
+    """Create a D vector, basically a belief that the agent has about its own starting location"""
 
     # Create array with length of observations, initialize with zeros
     D = np.zeros(n_states)
@@ -615,7 +622,7 @@ def _(n_states, np, plot_beliefs, utils):
     D = utils.norm_dist(D)
 
     """ Let's look at the prior over hidden states """
-    plot_beliefs(D, title_str = "Prior beliefs over states")
+    plot_beliefs(D, title_str="Prior beliefs over states")
     return (D,)
 
 
@@ -646,7 +653,7 @@ def _(D, log_next_state, log_stable, plot_beliefs, softmax):
     # equal to first step/row of graphic
     # dot_next_state = observation_chair.dot(A) # already calculated above
 
-    #equal to second step of graphic
+    # equal to second step of graphic
     log_D = log_stable(D)
     # log_next_state = log_stable(dot_next_state) # already calculated above
 
@@ -654,7 +661,7 @@ def _(D, log_next_state, log_stable, plot_beliefs, softmax):
     updated_state = softmax(log_D + log_next_state)
     print(f"updated_state={updated_state}")
     """ Let's look at the updated belief over hidden states """
-    plot_beliefs(updated_state, title_str = "Updated beliefs over states")
+    plot_beliefs(updated_state, title_str="Updated beliefs over states")
     return log_D, updated_state
 
 
@@ -746,11 +753,15 @@ def _(mo):
 
     answer_b_s = mo.accordion(
         {
-            "Answer:": f"{B_stay} The matrix shows, that if we stay, the field index of the previous moment (rows) is the same as the current moment (columns). <br> {B_stay_example}We can interpret this as the following: being currently on field 6 (= row index 6) performing the action ""Stay"" will bring us to field 6 (= highlighted column index in row 6)."
+            "Answer:": f"{B_stay} The matrix shows, that if we stay, the field index of the previous moment (rows) is the same as the current moment (columns). <br> {B_stay_example}We can interpret this as the following: being currently on field 6 (= row index 6) performing the action "
+            "Stay"
+            " will bring us to field 6 (= highlighted column index in row 6)."
         }
     )
     hint_b_s = mo.accordion(
-        {"Hint:": "If we stay on one field, how does it affect the position in the next moment?"}
+        {
+            "Hint:": "If we stay on one field, how does it affect the position in the next moment?"
+        }
     )
     question_b_s = mo.accordion(
         {
@@ -833,7 +844,7 @@ def _(mo):
         width="100%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
-    mo.hstack([up,down])
+    mo.hstack([up, down])
     return down, up
 
 
@@ -841,34 +852,34 @@ def _(mo):
 def _(grid_locations, np):
     actions = ["UP", "DOWN", "LEFT", "RIGHT", "STAY"]
 
+
     def create_B_matrix():
-      B = np.zeros( (len(grid_locations), len(grid_locations), len(actions)) )
+        B = np.zeros((len(grid_locations), len(grid_locations), len(actions)))
 
-      for action_id, action_label in enumerate(actions):
+        for action_id, action_label in enumerate(actions):
+            for curr_state, grid_location in enumerate(grid_locations):
+                y, x = grid_location
 
-        for curr_state, grid_location in enumerate(grid_locations):
+                if action_label == "UP":
+                    next_y = y - 1 if y > 0 else y
+                    next_x = x
+                elif action_label == "DOWN":
+                    next_y = y + 1 if y < 2 else y
+                    next_x = x
+                elif action_label == "LEFT":
+                    next_x = x - 1 if x > 0 else x
+                    next_y = y
+                elif action_label == "RIGHT":
+                    next_x = x + 1 if x < 2 else x
+                    next_y = y
+                elif action_label == "STAY":
+                    next_x = x
+                    next_y = y
+                new_location = (next_y, next_x)
+                next_state = grid_locations.index(new_location)
+                B[next_state, curr_state, action_id] = 1.0
+        return B
 
-          y, x = grid_location
-
-          if action_label == "UP":
-            next_y = y - 1 if y > 0 else y 
-            next_x = x
-          elif action_label == "DOWN":
-            next_y = y + 1 if y < 2 else y 
-            next_x = x
-          elif action_label == "LEFT":
-            next_x = x - 1 if x > 0 else x 
-            next_y = y
-          elif action_label == "RIGHT":
-            next_x = x + 1 if x < 2 else x 
-            next_y = y
-          elif action_label == "STAY":
-            next_x = x
-            next_y = y
-          new_location = (next_y, next_x)
-          next_state = grid_locations.index(new_location)
-          B[next_state, curr_state, action_id] = 1.0
-      return B
 
     B = create_B_matrix()
     return B, actions, create_B_matrix
@@ -900,13 +911,16 @@ def _(mo):
 
 @app.cell
 def _(n_states, plot_beliefs, utils):
-    """ Define a starting location""" 
+    """Define a starting location"""
+
     starting_location = 3
 
     """  and create a state vector out of it """
     starting_state = utils.onehot(starting_location, n_states)
     print(starting_state)
-    plot_beliefs(starting_state, "Categorical distribution over the starting state")
+    plot_beliefs(
+        starting_state, "Categorical distribution over the starting state"
+    )
     return starting_location, starting_state
 
 
@@ -956,11 +970,16 @@ def _(
     plot_point_on_grid,
     starting_state,
 ):
-    """ Generate the next state vector, given the starting state and the B matrix"""
-    down_action_idx = actions.index("DOWN") 
-    next_state_down = B[:,:, down_action_idx].dot(starting_state) # input the indices to the B matrix
+    """Generate the next state vector, given the starting state and the B matrix"""
+
+    down_action_idx = actions.index("DOWN")
+    next_state_down = B[:, :, down_action_idx].dot(
+        starting_state
+    )  # input the indices to the B matrix
     """ Plot the distribution of the vector"""
-    plot_beliefs(next_state_down, "Categorical distribution over the starting state")
+    plot_beliefs(
+        next_state_down, "Categorical distribution over the starting state"
+    )
 
     """ Plot the next state, after taking the action over the grid """
     plot_point_on_grid(next_state_down, grid_locations)
@@ -998,12 +1017,15 @@ def _(mo):
 @app.cell
 def _(log_stable, next_state, next_state_down, plot_beliefs, softmax):
     # first row of graphic
-    # use 
-    updated_state_action = softmax(log_stable(next_state_down)+log_stable(next_state))
+    # use
+    updated_state_action = softmax(
+        log_stable(next_state_down) + log_stable(next_state)
+    )
     print(updated_state_action)
     """ Plot the distribution of the vector"""
-    plot_beliefs(next_state_down, "Categorical distribution over the starting state")
-
+    plot_beliefs(
+        next_state_down, "Categorical distribution over the starting state"
+    )
     return (updated_state_action,)
 
 
@@ -1038,7 +1060,11 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.image(
-        src=str(mo.notebook_location() / "public" / "loop-environment-agent-brain-detailed-VFE_matrices.png"),
+        src=str(
+            mo.notebook_location()
+            / "public"
+            / "loop-environment-agent-brain-detailed-VFE_matrices.png"
+        ),
         width="100%",
         style={"display": "block", "margin": "0 auto"},  # CSS for centering
     )
@@ -1048,6 +1074,316 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""## 2. What is our best action? - Expected free energy (EFE)""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        Now that we know where we are in the room, how do we decide which way to move? Remember, we're not just wandering aimlessly—we're on a mission to find those cookies! This is where our brain's remarkable ability to plan actions comes into play.
+
+        ### Our Wishlist - "C Matrix"
+        Just like we needed a map of object locations (the A matrix), our brain also needs to know what we're looking for. In active inference, we store these preferences in what's called the C matrix—think of it as our brain's "wish list."
+
+        In our midnight snack adventure, this wish list is simple:
+        - We REALLY want to find the cookies - so we give them a hiiiigh preference
+
+        This preference map helps our brain evaluate potential actions: "If I move right, will I be closer to where I think the cookies are?"
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    C_matrix = mo.image(
+        src=str(mo.notebook_location() / "public" / "C_matrix.png"),
+        width="40%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+
+    answer_c_matrix = mo.accordion(
+        {
+            "Answer:": f"{C_matrix} The C matrix encodes all observations. Since we remember that we left the cookies on the table, our goal is to reach the table."
+        }
+    )
+    hint_c_matrix = mo.accordion(
+        {
+            "Hint:": "What object are we searching? Give it a probability, representing our preference."
+        }
+    )
+    question_c_matrix = mo.accordion(
+        {
+            "Question: How should the C matrix look like?": [
+                hint_c_matrix,
+                answer_c_matrix,
+            ]
+        }
+    )
+    mo.callout(question_c_matrix, kind="info")
+    return C_matrix, answer_c_matrix, hint_c_matrix, question_c_matrix
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        ### Planning Our Next Move - Action Selection
+        With our location figured out (thanks to VFE) and our preferences clear (in the C matrix), our brain can now plan its next move. But here's the clever part: it doesn't just consider what might feel good right now—it thinks ahead, like a chess player anticipating future moves.
+
+        This forward-thinking process is what we call Expected Free Energy (EFE). It helps our brain balance two crucial aspects:
+
+        1. **Goal-Seeking**: Moving towards where we think the cookies are
+
+        2. **Information-Gathering**: Taking actions that might help us confirm our location if we're uncertain
+
+        For example, if we're pretty sure we're near the desk but not certain, we might reach out to touch it first (gathering information) before moving towards where we think the cookies are (seeking our goal). This elegant balance between exploration and exploitation is what makes our cookie-finding mission both efficient and reliable!
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
+        Let's start to make this calculate our computer.
+
+        To infer which is currently our best action, we first need to compute the effect of each action on our hidden states. We already did this calculation above. For simplicity we will assume that we already in the middle of the room (on field 4).
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    EFE_step1 = mo.image(
+        src=str(
+            mo.notebook_location() / "public" / "EFE_step1_current_step_dot_B.png"
+        ),
+        width="100%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+
+    answer_EFE_step1 = mo.accordion(
+        {
+            "Answer:": f"{EFE_step1} We use the dot-matrix-vector product of our current state vector and the correct action "
+            "slice"
+            " of our B tensor (tensor = 3D matrix)."
+        }
+    )
+    hint_EFE_step1 = mo.accordion(
+        {
+            "Hint:": "We did the same calculation in the chapter of the B matrix above."
+        }
+    )
+    question_EFE_step1 = mo.accordion(
+        {
+            "Question: How do we calculate the effect of moving one step up from our current state (4)?": [
+                hint_EFE_step1,
+                answer_EFE_step1,
+            ]
+        }
+    )
+    mo.callout(question_EFE_step1, kind="info")
+    return EFE_step1, answer_EFE_step1, hint_EFE_step1, question_EFE_step1
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        Since we only have stored the preferred observation in our C array, we need to convert the expected state after taking our action to an expected obversation.
+
+        We did a similar calculation earlier, taking our observation and inferring our possible position. Now we do it the other way round, taking our predicted state and converting it to a predicted observation.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    EFE_step2 = mo.image(
+        src=str(
+            mo.notebook_location() / "public" / "EFE_step2_next_step_dot_A.png"
+        ),
+        width="100%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+
+    answer_EFE_step2 = mo.accordion(
+        {
+            "Answer:": f"{EFE_step2} We use the dot-matrix-vector product of the A matrix times the predicted state vector (dark green above)."
+        }
+    )
+    hint_EFE_step2 = mo.accordion(
+        {
+            "Hint:": "We did the same calculation in the chapter of the A matrix above."
+        }
+    )
+    question_EFE_step2 = mo.accordion(
+        {
+            "Question: How to calculate the expected observation given a hidden state?": [
+                hint_EFE_step2,
+                answer_EFE_step2,
+            ]
+        }
+    )
+    mo.callout(question_EFE_step2, kind="info")
+    return EFE_step2, answer_EFE_step2, hint_EFE_step2, question_EFE_step2
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""Next we want to know how well this predicted observation fits to our preferred observations. Since both vectors, the preferred states in C vector and the precicted observations, represent probability distributions, we actually need a tool to compare two probability distributions.""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    answer_EFE_kl = mo.accordion(
+        {
+            "Answer:": f"We use the the reverse Kullback-Leibler divergence between two 1-D categorical distributions. this gives us the value of how well our model (our expected observations given an action) fits our preferences (the C matrix). The KL divergence can be computed as: [log_stable(qo_u) - log_stable(C)].dot(qo_u) where C is our P(i) and qo_u is our Q. \n \n To get an intuition for it, scroll to the text part."
+        }
+    )
+    hint_EFE_kl = mo.accordion(
+        {
+            "Hint:": "One effective method is to look for a way to quantify how much one distribution diverges from another."
+        }
+    )
+    question_EFE_kl = mo.accordion(
+        {
+            "Question: How can we compare two probability distributions?": [
+                hint_EFE_kl,
+                answer_EFE_kl,
+            ]
+        }
+    )
+    mo.callout(question_EFE_kl, kind="info")
+    return answer_EFE_kl, hint_EFE_kl, question_EFE_kl
+
+
+@app.cell(hide_code=True)
+def _(KL_widget, mo):
+    mo.md(f"""### Kullback-leibler divergence 
+
+    Let's say that you've got a house with solar panels. During some parts of the day you may use more or less energy and the sun might not be shining. You can draw this out on the barwidget shown below. 
+
+    {KL_widget}
+
+    As you update the bar widget, the results below will reflect those changes in real-time.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(kl_div):
+    f"KL divergence between predicted and preferred distributions: {kl_div:.2f} "
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        This illustrates that predicted observations don't need to cover the entire spectrum of preferred states; they simply need to fall within the desired areas to achieve a low Kullback-Leibler (KL) divergence. 
+
+        You can think of it like observing stars with a telescope: while you're eager to spot a beautiful star (stars representing your preferred states), you don't want to be distracted by satellites or space debris that clutter the view. As long as you focus correctly to see at least one star (your predicted state), you can appreciate its beauty without needing to illuminate the entire night sky or see every single celestial object.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""Now let's turn to our cookie example, and see how going one step up from the middle field, reaching the table, looks like for our KL-divergence:""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(
+            mo.notebook_location() / "public" / "KL-divergence-predicted-preferred.png"
+        ),
+        width="100%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""We get a result of 0. 0 in this case means, that the model Q (our predicted observations), align perfectly with our preferred states/ground truth P.""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""These three steps we can repeat for each action we have, returning us 5 different expected states q(s|u), observations q(o|u) and measures how well the resulted observations fit our preferences.""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""### Uncertainty of our prediction - Entropy""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        Now that we calculated how good our action brings us towards our goals (preferred states), we should add a measure telling us how sure we can be of our calculation - in other words: we need an uncertainty measure. This can be expressed by how spread out or random our probability distribution of our A matrix is. In physics they called it Entropy. 
+        \n 
+        The entropy \( H \) of a discrete random variable \( X \) is defined as:
+
+        \[
+        H(X) = -\sum_{x \in \mathcal{X}} p(x) \log_b p(x)
+        \]
+
+        where: \n
+        - \( p(x) \) is the probability mass function of \( X \),
+        - \( \mathcal{X} \) is the set of possible values of \( X \),
+        - \( b \) is the base of the logarithm (commonly \( e \)).
+
+         This formula quantifies the average level of uncertainty or information associated with the variable's potential outcomes.
+
+        So to calculate the uncertainty or entropy of our A matrix H(A), we need to perform the following:
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    entropy_step1 = mo.image(
+        src=str(
+            mo.notebook_location() / "public" / "entropy_step1.png"
+        ),
+        width="100%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    entropy_step2 = mo.image(
+        src=str(
+            mo.notebook_location() / "public" / "entropy_step2.png"
+        ),
+        width="100%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    mo.vstack([entropy_step1, entropy_step2])
+    return entropy_step1, entropy_step2
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        What this basically tells us, is that we have a clear mapping from states to observations, meaning knowing our predicted state we can be very sure about our predicted observation (since each location has one object).
+        In other words, can be sure of our predicted observation given our predicted state since entropy = 0.
+        """
+    )
     return
 
 
@@ -1080,32 +1416,49 @@ def _():
 
 @app.cell(hide_code=True)
 def _(n_observations, n_states, np, plt, sns):
-    def plot_likelihood(matrix, xlabels = list(range(n_states)), ylabels = list(range(n_observations)), title_str = "Likelihood distribution (A)"):
+    def plot_likelihood(
+        matrix,
+        xlabels=list(range(n_states)),
+        ylabels=list(range(n_observations)),
+        title_str="Likelihood distribution (A)",
+    ):
         """
         Plots a 2-D likelihood matrix as a heatmap
         """
 
         if not np.isclose(matrix.sum(axis=0), 1.0).all():
-          raise ValueError("Distribution not column-normalized! Please normalize (ensure matrix.sum(axis=0) == 1.0 for all columns)")
+            raise ValueError(
+                "Distribution not column-normalized! Please normalize (ensure matrix.sum(axis=0) == 1.0 for all columns)"
+            )
 
-        fig = plt.figure(figsize = (6,6))
-        ax = sns.heatmap(matrix, xticklabels = xlabels, yticklabels = ylabels, cmap = 'gray', cbar = False, vmin = 0.0, vmax = 1.0)
+        fig = plt.figure(figsize=(6, 6))
+        ax = sns.heatmap(
+            matrix,
+            xticklabels=xlabels,
+            yticklabels=ylabels,
+            cmap="gray",
+            cbar=False,
+            vmin=0.0,
+            vmax=1.0,
+        )
         plt.title(title_str)
         plt.show()
 
-    def plot_grid(grid_locations, num_x = 3, num_y = 3 ):
+
+    def plot_grid(grid_locations, num_x=3, num_y=3):
         """
-        Plots the spatial coordinates of GridWorld as a heatmap, with each (X, Y) coordinate 
+        Plots the spatial coordinates of GridWorld as a heatmap, with each (X, Y) coordinate
         labeled with its linear index (its `state id`)
         """
 
         grid_heatmap = np.zeros((num_x, num_y))
         for linear_idx, location in enumerate(grid_locations):
-          y, x = location
-          grid_heatmap[y, x] = linear_idx
+            y, x = location
+            grid_heatmap[y, x] = linear_idx
         sns.set(font_scale=1.5)
-        sns.heatmap(grid_heatmap, annot=True, cbar = False, fmt='.0f', cmap='crest')
+        sns.heatmap(grid_heatmap, annot=True, cbar=False, fmt=".0f", cmap="crest")
         plt.show()
+
 
     def plot_point_on_grid(state_vector, grid_locations):
         """
@@ -1113,10 +1466,11 @@ def _(n_observations, n_states, np, plt, sns):
         """
         state_index = np.where(state_vector)[0][0]
         y, x = grid_locations[state_index]
-        grid_heatmap = np.zeros((3,3))
-        grid_heatmap[y,x] = 1.0
-        sns.heatmap(grid_heatmap, cbar = False, fmt='.0f')
+        grid_heatmap = np.zeros((3, 3))
+        grid_heatmap[y, x] = 1.0
+        sns.heatmap(grid_heatmap, cbar=False, fmt=".0f")
         plt.show()
+
 
     def plot_beliefs(belief_dist, title_str=""):
         """
@@ -1124,14 +1478,55 @@ def _(n_observations, n_states, np, plt, sns):
         """
 
         if not np.isclose(belief_dist.sum(), 1.0):
-          raise ValueError("Distribution not normalized! Please normalize")
+            raise ValueError("Distribution not normalized! Please normalize")
 
         plt.grid(zorder=0)
-        plt.bar(range(belief_dist.shape[0]), belief_dist, color='r', zorder=3)
+        plt.bar(range(belief_dist.shape[0]), belief_dist, color="r", zorder=3)
         plt.xticks(range(belief_dist.shape[0]))
         plt.title(title_str)
         plt.show()
     return plot_beliefs, plot_grid, plot_likelihood, plot_point_on_grid
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    from drawdata import BarWidget
+
+    # Barchart for KL-widget
+    KL_widget = mo.ui.anywidget(
+        BarWidget(
+            height=200,
+            width=500,
+            n_bins=9,
+            collection_names=["preferred", "predicted"],
+        )
+    )
+    return BarWidget, KL_widget
+
+
+@app.cell(hide_code=True)
+def _(KL_widget, np):
+    ### extract data from BarWidget for KL divergence
+    df = KL_widget.data_as_pandas
+    # only take rows where collection="preferred" or "predicted"
+    subset = df.loc[lambda d: d["collection"].isin(["preferred", "predicted"])]
+
+    # Reshape the data to get arrays for preferred and predicted distributions
+    preferred = subset[subset["collection"] == "preferred"]["value"].values
+    predicted = subset[subset["collection"] == "predicted"]["value"].values
+
+    # Ensure the distributions are normalized
+    preferred = preferred / preferred.sum() if preferred.sum() != 0 else preferred
+    predicted = predicted / predicted.sum() if predicted.sum() != 0 else predicted
+
+
+    # Calculate KL divergence
+    # Add small epsilon to avoid log(0) / stable_log
+    epsilon = 1e-10
+    kl_div = np.sum(
+        predicted * (np.log(predicted + epsilon) - np.log(preferred + epsilon))
+    )
+    return df, epsilon, kl_div, predicted, preferred, subset
 
 
 @app.cell(hide_code=True)

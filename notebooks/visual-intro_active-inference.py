@@ -38,7 +38,7 @@ def _(mo):
         r"""
         Have you ever woken up in the middle of the night, craving a midnight snack? You remember leaving those delicious cookies on your desk, but there's one small problem - the room is pitch dark. We've all been there!
 
-        What happens next is fascinating: without even thinking about it, your brain executes a remarkable navigation strategy. You carefully stretch out your hands and start moving through the darkness. Maybe you brush against something cold and metallic - ah, that's the radiator by the door. Your feet feel the soft carpet in the middle of the room, giving you another clue about your location. With growing confidence about where you are, you take two careful steps forward until your hands find the familiar wooden surface of your desk. Success! A moment later, you're enjoying those cookies you've been craving.
+        What happens next is fascinating: without even thinking about it, your brain executes a remarkable navigation strategy. You carefully stretch out your hands and start moving through the darkness. Maybe you brush against something cold and metallic - ah, that's the trash bin by the door. Your feet feel the soft carpet in the middle of the room, giving you another clue about your location. With growing confidence about where you are, you take two careful steps forward until your hands find the familiar wooden surface of your desk. Success! A moment later, you're enjoying those cookies you've been craving.
 
         This everyday experience perfectly illustrates how our brains solve complex problems through a combination of prediction, action, and sensory feedback. In this tutorial, we'll explore this process through the lens of Active Inference, using this relatable scenario to understand how our brains navigate uncertainty to achieve our goals.
         """
@@ -1125,6 +1125,21 @@ def _(mo):
     return C_matrix, answer_c_matrix, hint_c_matrix, question_c_matrix
 
 
+@app.cell
+def _(n_observations, np, plot_beliefs):
+    """ Create an empty vector to store the preferences over observations """
+    C = np.zeros(n_observations)
+
+    """ Choose an observation index to be the 'desired' rewarding index (in our example we choose 1, as the field of the table), and fill out the C vector accordingly """
+    desired_location_index = 1
+
+    C[desired_location_index] = 1.0 # set the preference for that location to be 100%, i.e. 1.0
+
+    """  Let's look at the prior preference distribution """
+    plot_beliefs(C, title_str = "Preferences over observations")
+    return C, desired_location_index
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
@@ -1234,6 +1249,25 @@ def _(mo):
     return EFE_step2, answer_EFE_step2, hint_EFE_step2, question_EFE_step2
 
 
+@app.cell
+def _():
+    """ Let's define these two steps as functions, that we can use later on for computing expected free energy """
+
+    def get_expected_states(B, qs_current, action):
+      """ Compute the expected states one step into the future, given a particular action """
+      qs_u = B[:,:,action].dot(qs_current)
+
+      return qs_u
+
+    def get_expected_observations(A, qs_u):
+      """ Compute the expected observations one step into the future, given a particular action """
+
+      qo_u = A.dot(qs_u)
+
+      return qo_u
+    return get_expected_observations, get_expected_states
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""Next we want to know how well this predicted observation fits to our preferred observations. Since both vectors, the preferred states in C vector and the precicted observations, represent probability distributions, we actually need a tool to compare two probability distributions.""")
@@ -1313,6 +1347,56 @@ def _(mo):
     return
 
 
+@app.cell
+def _(
+    A,
+    B,
+    C,
+    actions,
+    get_expected_observations,
+    get_expected_states,
+    log_stable,
+    n_states,
+    utils,
+):
+    """ Compute the Kullback-Leibler divergence of the action moving "up" from our starting field 4 (the middle of the room)"""
+
+    """ Make qs_current identical to the true starting state """ 
+    qs_current = utils.onehot(4, n_states)
+
+    """ Get the index of UP"""
+    up_action_idx = actions.index("UP") 
+
+    # Calculate 
+    qs_u_up = get_expected_states(B, qs_current, up_action_idx)
+    # alternative without previously defined function
+    # qs_u_up = B[:,:,up_idx].dot(qs_current)
+
+    qo_u_up = get_expected_observations(A, qs_u_up)
+    # alternative without previously defined function
+    # qo_u_up = A.dot(qs_u_up)
+
+    predicted_divergence_up = (log_stable(qo_u_up) - log_stable(C)).dot(qo_u_up)
+    print(predicted_divergence_up)
+    return (
+        predicted_divergence_up,
+        qo_u_up,
+        qs_current,
+        qs_u_up,
+        up_action_idx,
+    )
+
+
+@app.cell(hide_code=True)
+def _(log_stable):
+    # Let's store this calculation as a function
+    def kl_divergence(qo_u, C):
+      """ Compute the Kullback-Leibler divergence between two 1-D categorical distributions"""
+      
+      return (log_stable(qo_u) - log_stable(C)).dot(qo_u)
+    return (kl_divergence,)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""We get a result of 0. 0 in this case means, that the model Q (our predicted observations), align perfectly with our preferred states/ground truth P.""")
@@ -1376,12 +1460,223 @@ def _(mo):
     return entropy_step1, entropy_step2
 
 
+@app.cell
+def _(A, log_stable):
+    def entropy(A):
+      """ Compute the entropy of a set of conditional distributions, i.e. one entropy value per column """
+
+      H_A = - (A * log_stable(A)).sum(axis=0)
+
+      return H_A
+    print(entropy(A))
+    return (entropy,)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
         """
         What this basically tells us, is that we have a clear mapping from states to observations, meaning knowing our predicted state we can be very sure about our predicted observation (since each location has one object).
         In other words, can be sure of our predicted observation given our predicted state since entropy = 0.
+
+        How do we use this information? To rate our predicted outcome we acutally want to know how (un)certain our prediction is. We can do this by calculating the dot product of the entropy(uncertainty) vector of the A matrix times the predicted state when moving up.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(
+            mo.notebook_location() / "public" / "EFE_up.png"
+        ),
+        width="60%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell
+def _(A, entropy, qs_u_up):
+    predicted_uncertainty_up = entropy(A).dot(qs_u_up)
+    print(predicted_uncertainty_up)
+    return (predicted_uncertainty_up,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""### Combining KL-Diveregence and Entropy to compute EFE""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        Great now we are ready to compute the expected free energy (EFE) for our possible actions to find out which is the better action to take. In active inference EFE is generally notated as G so we will use these terms interchangeably.
+
+        We can calculate this by summing the predicted uncertainty of the state when moving up plus the predicted divergence between the expected observation of moving up and our preferences.
+
+        - predicted_uncertainty_up = H_A.dot(qs_u_up) [this actually gives us the uncertainty about our predicted observation since we use our predicted state of the action and the A matrix, which maps the hidden states to the observations).
+        - predicted_divergence_up = kl_divergence(qo_u_up, C)
+        - G[0] = predicted_uncertainty_up + predicted_divergence_up
+
+
+        For moving "UP" we get:
+        """
+    )
+    return
+
+
+@app.cell
+def _(predicted_divergence_up, predicted_uncertainty_up):
+    f"Expexted Free Energy of moving up from field 4: {predicted_divergence_up + predicted_uncertainty_up}"
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""For usefulness later on, let’s wrap the expected free energy calculations into a function""")
+    return
+
+
+@app.cell
+def _(
+    entropy,
+    get_expected_observations,
+    get_expected_states,
+    kl_divergence,
+    np,
+):
+    def calculate_G(A, B, C, qs_current, actions):
+
+      G = np.zeros(len(actions)) # vector of expected free energies, one per action
+
+      H_A = entropy(A) # entropy of the observation model, P(o|s)
+
+      for action_i in range(len(actions)):
+        
+        qs_u = get_expected_states(B, qs_current, action_i) # expected states, under the action we're currently looping over
+        qo_u = get_expected_observations(A, qs_u)           # expected observations, under the action we're currently looping over
+
+        pred_uncertainty = H_A.dot(qs_u) # predicted uncertainty, i.e. expected entropy of the A matrix
+        pred_div = kl_divergence(qo_u, C) # predicted divergence
+
+        G[action_i] = pred_uncertainty + pred_div # sum them together to get expected free energy
+      
+      return G
+    return (calculate_G,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        Now we can calculate the same for the other actions. Since in the uncertainty calculation the entropy of our A matrix remains very low, also our uncertainty about the prediction of our next state remains low. What changes is the predicted observation since we move to a different field and thus also our divergence between predicted and preferred observation changes. Since neither of them brings us to our preferred state the predicted KL-divergence will be 36.8 for the other states. Since we add it to the uncertainty we get G=36,8 for all other states.
+        We store each result of each G[u] in a vector.
+        """
+    )
+    return
+
+
+@app.cell
+def _(A, B, C, actions, calculate_G, qs_current):
+    print(actions)
+    print(calculate_G(A, B, C, qs_current, actions)) #here we use qs_current with one-hot vector on field 4 
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(
+            mo.notebook_location() / "public" / "EFE_of_actions.png"
+        ),
+        width="20%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        From there we can compute the probability for each action by passing the negative value to the softmax function. negative so that higher positive values have a lower probability.
+
+        Q_u = softmax(-G)
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(
+            mo.notebook_location() / "public" / "Probability_of_actions.png"
+        ),
+        width="70%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell
+def _(A, B, C, actions, calculate_G, plot_beliefs, qs_current, softmax):
+    p_actions = softmax(-calculate_G(A, B, C, qs_current, actions))
+    print(p_actions)
+
+    plot_beliefs(p_actions, title_str = "Preferences over actions")
+    return (p_actions,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""We are left with a 100% probability to move up, meaning that the probablity which action we will choose being on field 4 will be to 100% moving up.""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""Great Job. Now we know where to move.""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""## Complete Recipe for Active Inference""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""Now let's update our loop scheme from above:""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.image(
+        src=str(
+            mo.notebook_location() / "public" / "loop-environment-agent-brain-detailed_VFE_EFE_matrices.png"
+        ),
+        width="80%",
+        style={"display": "block", "margin": "0 auto"},  # CSS for centering
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        """
+        1. Sample an observation $o_t$ from the current state of the environment
+        2. Perform inference over hidden states i.e., optimize $q(s)$ through free-energy minimization. Calculating the VFE using $\mathbf{A}$ and $o_t$, combined with predicted states $q(s_{t-1})$ (which intially is $\mathbf{D}$ and then becomes predicted state by chosen action). Obtain new vector of $q(s_{t}|o_t)$ equal to the updated belief.
+        3. Calculate expected free energy of actions $\mathbf{G}$. Using the updated state belief $q(s_{t}|o_t)$ and the preferred observations $\mathbf{C}$.
+        4. Sample action from the posterior over actions $Q(u_t) \sim \sigma(-\mathbf{G})$. Calculate predicted state $q(s_{t+1}|u_t)$ using $\mathbf{B}$.
+        5. Use the sampled action $a_t$ to perturb the generative process. Go back to step 1
         """
     )
     return
@@ -1515,14 +1810,15 @@ def _(KL_widget, np):
     preferred = subset[subset["collection"] == "preferred"]["value"].values
     predicted = subset[subset["collection"] == "predicted"]["value"].values
 
+    # Add small epsilon to avoid log(0) / stable_log and division by 0
+    epsilon = 1e-10
+
     # Ensure the distributions are normalized
-    preferred = preferred / preferred.sum() if preferred.sum() != 0 else preferred
-    predicted = predicted / predicted.sum() if predicted.sum() != 0 else predicted
+    preferred = preferred / preferred.sum() if preferred.sum() != 0 else epsilon
+    predicted = predicted / predicted.sum() if predicted.sum() != 0 else epsilon
 
 
     # Calculate KL divergence
-    # Add small epsilon to avoid log(0) / stable_log
-    epsilon = 1e-10
     kl_div = np.sum(
         predicted * (np.log(predicted + epsilon) - np.log(preferred + epsilon))
     )

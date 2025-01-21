@@ -1835,7 +1835,7 @@ def _():
         """ 
         Computes the stable natural log, giving a lower bound to ln(0)
         """
-        return np.log(np.clip(x, min=epsilon))
+        return np.log(np.clip(x, a_min=epsilon, a_max=None))
 
     def softmax(dist):
         """ 

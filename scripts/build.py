@@ -126,7 +126,7 @@ def generate_index(all_notebooks: List[str], output_dir: str) -> None:
       <div class="text-center mb-8">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">What do you want to know?</h2>
         <form class="flex justify-center">
-          <input type="text" placeholder="Type your message..." class="border rounded-lg p-2 w-1/2" />
+          <input type="text" placeholder="I want to learn how to implement ActInf in python..." class="border rounded-lg p-2 w-1/2" />
           <button type="submit" class="ml-2 p-2 bg-indigo-600 text-white rounded-lg">Send</button>
         </form>
       </div>

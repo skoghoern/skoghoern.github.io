@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.10.14"
+__generated_with = "0.10.15"
 app = marimo.App()
 
 
@@ -241,13 +241,12 @@ def _(mo):
 
 @app.cell
 def _():
-    from pymdp import utils
     import itertools
 
     """ Create  the grid locations in the form of a list of (Y, X) tuples -- HINT: use itertools """
     grid_locations = list(itertools.product(range(3), repeat=2))
     print(grid_locations)
-    return grid_locations, itertools, utils
+    return grid_locations, itertools
 
 
 @app.cell
@@ -530,9 +529,9 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(A, log_stable, observation_chair, softmax):
+def _(A, log_stable, np, observation_chair, softmax):
     # equal to first step/row of graphic
-    dot_next_state = observation_chair.dot(A)
+    dot_next_state = np.dot(observation_chair,A)
     print(f"o dot A={dot_next_state}")
 
     # equal to second step of graphic
@@ -608,7 +607,7 @@ def _(mo):
 
 
 @app.cell
-def _(n_states, np, plot_beliefs, utils):
+def _(n_states, np, plot_beliefs):
     """Create a D vector, basically a belief that the agent has about its own starting location"""
 
     # Create array with length of observations, initialize with zeros
@@ -619,7 +618,7 @@ def _(n_states, np, plot_beliefs, utils):
     D[6] = 1
 
     # normalize values so that all values add up to 1
-    D = utils.norm_dist(D)
+    D = D / D.sum() if D.sum() != 0 else 0
 
     """ Let's look at the prior over hidden states """
     plot_beliefs(D, title_str="Prior beliefs over states")
@@ -651,7 +650,7 @@ def _(mo):
 @app.cell
 def _(D, log_next_state, log_stable, plot_beliefs, softmax):
     # equal to first step/row of graphic
-    # dot_next_state = observation_chair.dot(A) # already calculated above
+    # dot_next_state = np.dot(observation_chair,A) # already calculated above
 
     # equal to second step of graphic
     log_D = log_stable(D)
@@ -910,13 +909,13 @@ def _(mo):
 
 
 @app.cell
-def _(n_states, plot_beliefs, utils):
+def _(n_states, one_hot, plot_beliefs):
     """Define a starting location"""
 
     starting_location = 3
 
     """  and create a state vector out of it """
-    starting_state = utils.onehot(starting_location, n_states)
+    starting_state = one_hot(starting_location, n_states)
     print(starting_state)
     plot_beliefs(
         starting_state, "Categorical distribution over the starting state"
@@ -966,6 +965,7 @@ def _(
     B,
     actions,
     grid_locations,
+    np,
     plot_beliefs,
     plot_point_on_grid,
     starting_state,
@@ -973,9 +973,7 @@ def _(
     """Generate the next state vector, given the starting state and the B matrix"""
 
     down_action_idx = actions.index("DOWN")
-    next_state_down = B[:, :, down_action_idx].dot(
-        starting_state
-    )  # input the indices to the B matrix
+    next_state_down = np.dot(B[:, :, down_action_idx], starting_state)  # input the indices to the B matrix
     """ Plot the distribution of the vector"""
     plot_beliefs(
         next_state_down, "Categorical distribution over the starting state"
@@ -1250,19 +1248,19 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(np):
     """ Let's define these two steps as functions, that we can use later on for computing expected free energy """
 
     def get_expected_states(B, qs_current, action):
       """ Compute the expected states one step into the future, given a particular action """
-      qs_u = B[:,:,action].dot(qs_current)
+      qs_u = np.dot(B[:,:,action], (qs_current))
 
       return qs_u
 
     def get_expected_observations(A, qs_u):
       """ Compute the expected observations one step into the future, given a particular action """
 
-      qo_u = A.dot(qs_u)
+      qo_u = np.dot(A, (qs_u))
 
       return qo_u
     return get_expected_observations, get_expected_states
@@ -1357,12 +1355,13 @@ def _(
     get_expected_states,
     log_stable,
     n_states,
-    utils,
+    np,
+    one_hot,
 ):
     """ Compute the Kullback-Leibler divergence of the action moving "up" from our starting field 4 (the middle of the room)"""
 
     """ Make qs_current identical to the true starting state """ 
-    qs_current = utils.onehot(4, n_states)
+    qs_current = one_hot(4, n_states)
 
     """ Get the index of UP"""
     up_action_idx = actions.index("UP") 
@@ -1370,13 +1369,13 @@ def _(
     # Calculate 
     qs_u_up = get_expected_states(B, qs_current, up_action_idx)
     # alternative without previously defined function
-    # qs_u_up = B[:,:,up_idx].dot(qs_current)
+    # qs_u_up = np.dot(B[:,:,up_idx], qs_current)
 
     qo_u_up = get_expected_observations(A, qs_u_up)
     # alternative without previously defined function
-    # qo_u_up = A.dot(qs_u_up)
+    # qo_u_up = np.dot(A, qs_u_up)
 
-    predicted_divergence_up = (log_stable(qo_u_up) - log_stable(C)).dot(qo_u_up)
+    predicted_divergence_up = np.dot((qo_u_up), (log_stable(qo_u_up) - log_stable(C)))
     print(predicted_divergence_up)
     return (
         predicted_divergence_up,
@@ -1392,7 +1391,7 @@ def _(log_stable):
     # Let's store this calculation as a function
     def kl_divergence(qo_u, C):
       """ Compute the Kullback-Leibler divergence between two 1-D categorical distributions"""
-      
+
       return (log_stable(qo_u) - log_stable(C)).dot(qo_u)
     return (kl_divergence,)
 
@@ -1498,8 +1497,8 @@ def _(mo):
 
 
 @app.cell
-def _(A, entropy, qs_u_up):
-    predicted_uncertainty_up = entropy(A).dot(qs_u_up)
+def _(A, entropy, np, qs_u_up):
+    predicted_uncertainty_up = np.dot(entropy(A), qs_u_up)
     print(predicted_uncertainty_up)
     return (predicted_uncertainty_up,)
 
@@ -1556,15 +1555,15 @@ def _(
       H_A = entropy(A) # entropy of the observation model, P(o|s)
 
       for action_i in range(len(actions)):
-        
+
         qs_u = get_expected_states(B, qs_current, action_i) # expected states, under the action we're currently looping over
         qo_u = get_expected_observations(A, qs_u)           # expected observations, under the action we're currently looping over
 
-        pred_uncertainty = H_A.dot(qs_u) # predicted uncertainty, i.e. expected entropy of the A matrix
+        pred_uncertainty = np.dot(H_A, qs_u) # predicted uncertainty, i.e. expected entropy of the A matrix
         pred_div = kl_divergence(qo_u, C) # predicted divergence
 
         G[action_i] = pred_uncertainty + pred_div # sum them together to get expected free energy
-      
+
       return G
     return (calculate_G,)
 
@@ -1583,7 +1582,7 @@ def _(mo):
 @app.cell
 def _(A, B, C, actions, calculate_G, qs_current):
     print(actions)
-    print(calculate_G(A, B, C, qs_current, actions)) #here we use qs_current with one-hot vector on field 4 
+    print(calculate_G(A, B, C, qs_current, actions)) #here we use qs_current with one-hot vector on field 4
     return
 
 
@@ -1800,7 +1799,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(KL_widget, np):
+def _(KL_widget, epsilon, np):
     ### extract data from BarWidget for KL divergence
     df = KL_widget.data_as_pandas
     # only take rows where collection="preferred" or "predicted"
@@ -1810,19 +1809,17 @@ def _(KL_widget, np):
     preferred = subset[subset["collection"] == "preferred"]["value"].values
     predicted = subset[subset["collection"] == "predicted"]["value"].values
 
-    # Add small epsilon to avoid log(0) / stable_log and division by 0
-    epsilon = 1e-10
 
     # Ensure the distributions are normalized
-    preferred = preferred / preferred.sum() if preferred.sum() != 0 else epsilon
-    predicted = predicted / predicted.sum() if predicted.sum() != 0 else epsilon
+    preferred = preferred / preferred.sum() if preferred.sum() != 0 else 0
+    predicted = predicted / predicted.sum() if predicted.sum() != 0 else 0
 
 
     # Calculate KL divergence
     kl_div = np.sum(
         predicted * (np.log(predicted + epsilon) - np.log(preferred + epsilon))
     )
-    return df, epsilon, kl_div, predicted, preferred, subset
+    return df, kl_div, predicted, preferred, subset
 
 
 @app.cell(hide_code=True)
@@ -1830,9 +1827,32 @@ def _():
     import numpy as np
     import matplotlib.pyplot as plt
     import seaborn as sns
-    from pymdp.maths import softmax
-    from pymdp.maths import spm_log_single as log_stable
-    return log_stable, np, plt, sns, softmax
+
+    # Add small epsilon to avoid log(0) / stable_log and division by 0
+    epsilon = np.finfo(float).eps
+
+    def log_stable(x):
+        """ 
+        Computes the stable natural log, giving a lower bound to ln(0)
+        """
+        return np.log(np.clip(x, min=epsilon))
+
+    def softmax(dist):
+        """ 
+        Computes the softmax function on a set of values
+        """
+
+        output = dist - dist.max(axis=0)
+        output = np.exp(output)
+        output = output / np.sum(output, axis=0)
+        return output
+
+    def one_hot(index, length):
+        """Generate one-hot vector of given length. and position of index =1, else =0"""
+        one_hot_vector = np.zeros(length)
+        one_hot_vector[index] = 1
+        return one_hot_vector
+    return epsilon, log_stable, np, one_hot, plt, sns, softmax
 
 
 if __name__ == "__main__":

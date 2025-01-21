@@ -93,7 +93,7 @@ def generate_index(all_notebooks: List[str], output_dir: str) -> None:
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-4">
           <div class="flex items-center space-x-8">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Brain.svg" 
+            <img src="notebooks/public/active-inference-world-png.png" 
                  alt="brain symbol" 
                  class="h-8 dark:invert" />
           </div>
